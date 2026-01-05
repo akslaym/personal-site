@@ -9,7 +9,7 @@ Primary success criteria: fast, accessible, SEO-friendly, easy to update content
 - Language: TypeScript
 - Styling: Tailwind CSS
 - Content: Hardcoded in components (no external JSON yet)
-- Deployed on: GitHub Pages
+- Deployed on: Cloudflare Pages (akslaym.dev)
 
 ## General Rules of Functioning 
 Read this every time you open this document for the first time. The rules you must abide by are listed below: 
@@ -44,13 +44,39 @@ Before updating the changelog, ensure:
 - No obvious a11y regressions on key pages (home / blog / project page)
 
 ## Current TODOs
-Summary: Core functionality complete. Future iterations could focus on:
-- [ ] Add real project screenshots when available, I've currently put two screenshots in the home directory. Place them accordingly, and name them correctly.
-- [ ] Optimize for mobile experience (test on various devices)
-- [ ] I added actual CV file to the home directly. Please place in public folder and name accordingly. 
-- [ ] Finally, I have a domain akslaym.dev on cloudflare. Please deploy the site to this domain and make sure all assets carry over accurately. I want it to be live and look like it does on dev. Please also make sure all code abides by standards that can be published and deployed temporarily. I will vet these and provide feedback if needed later. Also, if you cannot deploy to cloudflare without more information, ask me for it and I will provide it.
+Summary: v0.4.0 deployment-ready. Future iterations could focus on:
+- [ ] Dark mode toggle (popular request for dev portfolios)
+- [ ] Add OG image for social sharing previews
+- [ ] Analytics integration (Cloudflare Web Analytics or Plausible)
+- [ ] Blog/writing section (if user starts publishing)
+- [ ] Contact form with Cloudflare Workers backend
+- [ ] Performance optimization: lazy-load project images
+- [ ] Custom favicon (replace Vite default)
 
 ## Changelog
+### v0.4.0 — 2026-01-05
+- Summary: Deployment-ready release with real assets and SEO optimization
+- Files touched:
+  - `index.html` - Added SEO meta tags (title, description, OG, Twitter cards, canonical URL)
+  - `src/sections/Projects.tsx` - Replaced gradient/icon previews with actual screenshots
+  - `src/components/Navbar.tsx` - Added social links to mobile navigation dropdown
+  - `public/24cast-preview.png` - NEW: Real screenshot of 24cast.org project
+  - `public/bpr-preview.png` - NEW: Real screenshot of Brown Political Review
+  - `public/resume.pdf` - NEW: Actual CV file for download
+  - `.gitignore` - Added `.claude/` directory to ignore list
+- Reasoning / design notes:
+  - **Screenshots**: Replaced placeholder icons with real project screenshots. Used `object-cover object-top` for optimal cropping and `group-hover:scale-105` for subtle zoom effect.
+  - **SEO**: Added comprehensive meta tags targeting "akslaym.dev" domain. Included Open Graph and Twitter Card markup for rich social sharing.
+  - **Mobile nav**: Added social links (GitHub, LinkedIn, Scholar, Email) below nav items with visual separator. Ensures full functionality on mobile.
+  - **Git setup**: Initialized repository, excluded temporary files and Claude settings from version control for clean deployment.
+  - **Security review**: Verified all external links use `rel="noopener noreferrer"`, no API keys or secrets exposed, no XSS vectors present.
+- Issues encountered:
+  - Screenshot filenames had Unicode non-breaking spaces (from macOS). Solved using glob patterns instead of direct filename references.
+- Follow-ups / future TODO ideas:
+  - Custom favicon to replace Vite default
+  - Dark mode toggle
+  - OG image for social previews
+
 ### v0.3.0 — 2026-01-05
 - Summary: Layout restructure and filtering improvements for better UX
 - Files touched:
@@ -126,30 +152,73 @@ Summary: Core functionality complete. Future iterations could focus on:
   - Add animations for section transitions
   - Consider adding a publications list with proper academic citations
 
+## Deployment (Cloudflare Pages)
+
+### Step 1: Push to GitHub
+```bash
+# Create a new repo on GitHub (github.com/new) named "personal-site"
+# Then run:
+git remote add origin https://github.com/akslaym/personal-site.git
+git push -u origin main
+```
+
+### Step 2: Connect to Cloudflare Pages
+1. Go to [Cloudflare Dashboard](https://dash.cloudflare.com) → Pages
+2. Click "Create a project" → "Connect to Git"
+3. Select your GitHub account and `personal-site` repository
+4. Configure build settings:
+   - **Framework preset**: Vite
+   - **Build command**: `npm run build`
+   - **Build output directory**: `dist`
+5. Click "Save and Deploy"
+
+### Step 3: Add Custom Domain
+1. After deployment succeeds, go to your Pages project → "Custom domains"
+2. Click "Set up a custom domain"
+3. Enter `akslaym.dev`
+4. Cloudflare will auto-configure DNS (since domain is already on Cloudflare)
+
+### Subsequent Deployments
+Push to `main` branch → Cloudflare auto-deploys within ~1 minute
+
 ## Known quirks / landmines
 - ESLint warning on `FilterContext.tsx` about fast refresh (expected for context files)
 
-## File System Architecture (v0.3.0)
+## File System Architecture (v0.4.0)
 ```
-/src
-├── App.tsx                      # Main app - section ordering, providers
-├── main.tsx                     # Entry point
-├── index.css                    # Tailwind directives
-├── /components
-│   ├── Layout.tsx               # Navbar + main + Footer + background pattern
-│   ├── Navbar.tsx               # Fixed nav (h-16) with "AM" logo, social links
-│   ├── Footer.tsx               # Simple footer
-│   ├── WorkSection.tsx          # Wrapper with sticky multi-select filter bar
-│   └── /ui
-│       └── Section.tsx          # Reusable section wrapper
-├── /context
-│   └── FilterContext.tsx        # Multi-select filter state (array-based)
-├── /sections
-│   ├── Hero.tsx                 # Combined: name, bio, CTAs, CV + Recent Updates (two-column)
-│   ├── Research.tsx             # Research projects with publication links
-│   ├── Experience.tsx           # Work experience cards
-│   ├── Projects.tsx             # Project cards with filtering
-│   └── Skills.tsx               # Skills grid + interests
-└── /lib
-    └── utils.ts                 # cn() utility for classnames
+/
+├── index.html                   # Entry HTML with SEO meta tags
+├── vite.config.ts               # Vite configuration
+├── tailwind.config.js           # Tailwind CSS config
+├── tsconfig.json                # TypeScript config
+├── package.json                 # Dependencies and scripts
+├── claude.md                    # Project documentation (this file)
+│
+├── /public                      # Static assets (copied to dist as-is)
+│   ├── 24cast-preview.png       # Project screenshot
+│   ├── bpr-preview.png          # Project screenshot
+│   ├── resume.pdf               # CV download file
+│   └── vite.svg                 # Favicon (to be replaced)
+│
+└── /src
+    ├── App.tsx                  # Main app - section ordering, providers
+    ├── main.tsx                 # Entry point
+    ├── index.css                # Tailwind directives
+    ├── /components
+    │   ├── Layout.tsx           # Navbar + main + Footer + background pattern
+    │   ├── Navbar.tsx           # Fixed nav (h-16) with "AM" logo, social links (desktop + mobile)
+    │   ├── Footer.tsx           # Simple footer
+    │   ├── WorkSection.tsx      # Wrapper with sticky multi-select filter bar
+    │   └── /ui
+    │       └── Section.tsx      # Reusable section wrapper
+    ├── /context
+    │   └── FilterContext.tsx    # Multi-select filter state (array-based)
+    ├── /sections
+    │   ├── Hero.tsx             # Combined: name, bio, CTAs, CV + Recent Updates (two-column)
+    │   ├── Research.tsx         # Research projects with publication links
+    │   ├── Experience.tsx       # Work experience cards
+    │   ├── Projects.tsx         # Project cards with real screenshots
+    │   └── Skills.tsx           # Skills grid + interests + contact CTA
+    └── /lib
+        └── utils.ts             # cn() utility for classnames
 ```
